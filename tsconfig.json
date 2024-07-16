@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "rootDirs": [
+      "src",
+      "test"
+    ],
+    "outDir": "./dist"
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+}
