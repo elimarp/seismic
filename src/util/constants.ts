@@ -17,7 +17,7 @@ export const GAME_EVENTS = [
   'ShutdownGame:'
 ] as const
 
-export enum GameTypes {
+export enum GAME_TYPES {
   FreeForAll,
   Tournament, // one on one tournament
   SinglePlayer, // single player tournament
