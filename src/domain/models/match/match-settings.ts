@@ -1,12 +1,12 @@
 export type MatchSettings = {
-  capturelimit?: number
-  timelimit?: number
-  fraglimit?: number
-  gametype?: number
-  mapname?: string
+  captureLimit?: number
+  timeLimit?: number
+  fragLimit?: number
+  gameType?: number
+  mapName?: string
 }
 
-export type MatchSettingsRaw = {
+export type RawMatchSettings = {
   capturelimit?: string
   g_maxGameClients?: string
   timelimit?: string
