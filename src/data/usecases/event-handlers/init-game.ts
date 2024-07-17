@@ -3,7 +3,7 @@ import { MalformedInputError } from '../../../domain/usecases/exceptions/malform
 import { type GameEventHandler } from '../../../domain/usecases/game-event-handler'
 import { parseBackslashDelimitedStringToObject, parseNumberStringToNumber } from '../../../util/transformers'
 
-export class InitGame implements GameEventHandler {
+export class InitGameEventHandler implements GameEventHandler {
   handle (matches: GameMatch[], matchTime: string, data?: string): void {
     if (!data) throw new MalformedInputError()
 

@@ -14,7 +14,7 @@ export class LogParser implements ParseServerLog {
   constructor (private readonly eventHandlers: Record<GameEvent, GameEventHandler>) {
   }
 
-  // TODO?: catch errors? MalformedInputError inside for loop?
+  // TODO?: catch errors? inside for loop?
   parse (serverLog: string): GameMatch[] {
     if (typeof serverLog !== 'string' || !serverLog) return []
 

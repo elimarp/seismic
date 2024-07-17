@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-confusing-void-expression */
 import { faker } from '@faker-js/faker'
-import { InitGame } from './init-game'
+import { InitGameEventHandler } from './init-game'
 import { makeNewGameMatch } from '../../../../test/utils/factories'
 import { GameMatch } from '../../../domain/models'
 import { MalformedInputError } from '../../../domain/usecases'
 
 const makeSut = () => {
   return {
-    sut: new InitGame()
+    sut: new InitGameEventHandler()
   }
 }
 
