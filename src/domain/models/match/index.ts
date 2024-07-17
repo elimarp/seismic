@@ -1,4 +1,4 @@
-import { type GAME_EVENTS } from '../../../utils/constants'
+import { type GAME_EVENTS } from '../../../util/constants'
 
 export * from './game-match'
 export * from './match-settings'

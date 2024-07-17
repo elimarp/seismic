@@ -1,0 +1,6 @@
+{
+  "modulePaths": [
+    "<rootDir>"
+  ],
+  "moduleDirectories": ["<rootDir>", "node_modules"]
+}

@@ -1,6 +1,6 @@
 import { type GameEvent, type GameMatch } from '../domain/models'
-import { GAME_EVENTS } from '../utils/constants'
-import { type GameEventHandler } from './protocols/game-event-handler'
+import { GAME_EVENTS } from '../util/constants'
+import { type GameEventHandler } from '../domain/usecases/game-event-handler'
 
 // TODO: rethink this (use controllers |  move LogParser class | call it controller)
 interface ParseServerLog {

@@ -1,6 +1,12 @@
 {
   "cSpell.words": [
+    "capturelimit",
     "deathmatch",
-    "INGAME"
+    "fraglimit",
+    "gametype",
+    "INGAME",
+    "mapname",
+    "timelimit",
+    "usecases"
   ]
 }
