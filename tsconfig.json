@@ -5,7 +5,8 @@
       "src",
       "test"
     ],
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "allowUnreachableCode": true
   },
   "include": [
     "src",
