@@ -1,6 +1,7 @@
 import { type GameMatch } from '../../../domain/models'
 import { type PlayerInfo, type RawPlayerInfo } from '../../../domain/models/player/player-info'
 import { MalformedInputError, type GameEventHandler } from '../../../domain/usecases'
+import { splitStringAtIndex } from '../../../util/string/split-at-index'
 import { parseBackslashDelimitedStringToObject, parseNumberStringToNumber } from '../../../util/transformers'
 
 export class ClientUserInfoChangedEventHandler implements GameEventHandler {
@@ -9,7 +10,10 @@ export class ClientUserInfoChangedEventHandler implements GameEventHandler {
     const currentMatch = matches.at(-1)
     if (!currentMatch || !currentMatch.isOpen) return
 
-    const [playerIdStr, rawPlayerInfoStr] = data.split(' ')
+    const splitIndex = data.indexOf(' ')
+
+    const [playerIdStr, rawPlayerInfoStr] = splitStringAtIndex(data, splitIndex)
+    console.log({ playerIdStr, rawPlayerInfoStr })
 
     const rawPlayerInfo = parseBackslashDelimitedStringToObject(rawPlayerInfoStr)
     const playerId = parseNumberStringToNumber(playerIdStr)
