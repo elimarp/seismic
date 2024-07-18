@@ -52,9 +52,10 @@ describe('ClientUserinfoChanged Event Handler', () => {
     const { sut, matchRepositoryStub } = makeSut()
     const input = makeInput('2', 'stan is law')
 
+    jest.spyOn(matchRepositoryStub, 'getPlayer').mockReturnValueOnce(null)
     const spied = jest.spyOn(matchRepositoryStub, 'addPlayer')
 
-    sut.handle('0:02', input)
+    sut.handle('10:00', input)
 
     expect(spied).toHaveBeenCalledTimes(1)
     expect(spied).toHaveBeenCalledWith(2, {
@@ -67,6 +68,7 @@ describe('ClientUserinfoChanged Event Handler', () => {
     const { sut, matchRepositoryStub } = makeSut()
     const input = makeInput('2', 'daKillerNTC')
 
+    jest.spyOn(matchRepositoryStub, 'getPlayer').mockReturnValueOnce(null)
     const spied = jest.spyOn(matchRepositoryStub, 'addPlayer')
 
     sut.handle('0:02', input)

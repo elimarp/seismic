@@ -1,7 +1,6 @@
-import { makeNewGameMatch } from '../../../../test/utils/factories'
-import { Player, type Match, type PlayerInfo } from '../../../domain/models'
+import { makeNewGameMatch, makeNewPlayer } from '../../../../test/utils/factories'
+import { type Match, type Player, type PlayerInfo } from '../../../domain/models'
 import { MalformedInputError } from '../../../domain/usecases'
-import { TEAMS } from '../../../util/constants'
 import { type GetOpenMatchProtocol, type GetPlayerProtocol } from '../../protocols'
 import { type UpdatePlayerProtocol } from '../../protocols/match/update-player'
 import { ClientBeginEventHandler } from './client-begin'
@@ -67,10 +66,7 @@ describe('ClientBegin Event Handler', () => {
 
     const serverTime = '0:03'
 
-    jest.spyOn(matchRepositoryStub, 'getPlayer').mockReturnValueOnce(
-      new Player({
-        inGameId: 2, nickname: 'player name', team: TEAMS.TEAM_FREE
-      }))
+    jest.spyOn(matchRepositoryStub, 'getPlayer').mockReturnValueOnce(makeNewPlayer())
 
     const spied = jest.spyOn(matchRepositoryStub, 'updatePlayer')
 

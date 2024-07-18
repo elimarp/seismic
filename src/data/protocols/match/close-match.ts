@@ -1,3 +1,3 @@
 export interface CloseMatchProtocol {
-  closeLastMatch(): void
+  closeLastMatch(serverTime: string, reason?: string): void
 }

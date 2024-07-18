@@ -11,6 +11,9 @@ export class Match {
   totalKills: number = 0
   worldId = WORLD_ID
 
+  endReason?: string
+  endedAt?: string
+
   constructor (
     private readonly createdAt: string,
     private readonly settings: MatchSettings

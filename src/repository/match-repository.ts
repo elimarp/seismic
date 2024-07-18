@@ -72,10 +72,12 @@ export class MatchRepository implements
     this.matches.push(match)
   }
 
-  closeLastMatch (): void {
+  closeLastMatch (serverTime: string, reason?: string): void {
     const lastMatch = this.matches.at(-1)
     if (!lastMatch) return
 
+    lastMatch.endedAt = serverTime
+    lastMatch.endReason = reason
     lastMatch.isOpen = false
   }
 }
