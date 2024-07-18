@@ -13,7 +13,6 @@ export class ClientUserInfoChangedEventHandler implements GameEventHandler {
     const splitIndex = data.indexOf(' ')
 
     const [playerIdStr, rawPlayerInfoStr] = splitStringAtIndex(data, splitIndex)
-    console.log({ playerIdStr, rawPlayerInfoStr })
 
     const rawPlayerInfo = parseBackslashDelimitedStringToObject(rawPlayerInfoStr)
     const playerId = parseNumberStringToNumber(playerIdStr)

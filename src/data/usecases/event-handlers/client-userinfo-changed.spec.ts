@@ -9,6 +9,20 @@ const makeInput = (id: string, nickname: string) => `${id} n\\${nickname}\\t\\0\
 '\\c1\\5\\c2\\5\\hc\\100\\w\\0\\l\\0\\tt\\0\\tl\\0'
 
 describe('ClientUserinfoChanged Event Handler', () => {
+  test('do nothing if last match is not open', () => {
+    const { sut } = makeSut()
+    const input = 'any input'
+
+    const lastMatch = makeNewGameMatch()
+    lastMatch.isOpen = false
+    const matches = [lastMatch]
+
+    sut.handle(matches, '0:00', input)
+
+    expect(matches[0].isOpen).toBe(false)
+    expect(matches[0].players).toStrictEqual([])
+  })
+
   test('throw MalformedInputError if input is empty', () => {
     const { sut } = makeSut()
     const input = ''
