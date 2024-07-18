@@ -1,22 +1,21 @@
-import { type GameEvent, GameMatch } from '../domain/models'
+import { type GameEvent, Match } from '../domain/models'
 import { type GameEventHandler } from '../domain/usecases'
 import { makeIgnorableEventLog, makeNewGameMatch, makeValidEventLog, makeValidMatch } from '../../test/utils/factories'
 import { LogParser } from './log-parser'
 
 class AnyEventHandlerStub implements GameEventHandler {
-  handle (matches: GameMatch[], matchTime: string, data?: string) { }
+  handle (serverTime: string, data?: string) { }
 }
 
 const makeSut = () => {
   const eventHandlers: Record<GameEvent, GameEventHandler> = {
     InitGame: new AnyEventHandlerStub(),
     ClientBegin: new AnyEventHandlerStub(),
-    ClientConnect: new AnyEventHandlerStub(),
     ClientUserinfoChanged: new AnyEventHandlerStub(),
     Exit: new AnyEventHandlerStub(),
     Item: new AnyEventHandlerStub(),
     Kill: new AnyEventHandlerStub(),
-    'ShutdownGame:': new AnyEventHandlerStub()
+    ShutdownGame: new AnyEventHandlerStub()
   }
 
   return {
@@ -50,7 +49,7 @@ describe('Log Parser', () => {
     const spied = jest.spyOn(eventHandlers[eventName], 'handle')
 
     sut.parse(eventLog)
-    const rest = eventName === 'ShutdownGame:' ? undefined : expect.any(String)
+    const rest = eventName === 'ShutdownGame' ? undefined : expect.any(String)
 
     expect(spied).toHaveBeenCalledTimes(1)
     expect(spied).toHaveBeenCalledWith([], '1:00', rest)
@@ -71,12 +70,12 @@ describe('Log Parser', () => {
     const { sut, eventHandlers } = makeSut()
     const input = makeValidMatch()
 
-    jest.spyOn(eventHandlers.InitGame, 'handle').mockImplementationOnce((matches, matchTime, data) => {
+    jest.spyOn(eventHandlers.InitGame, 'handle').mockImplementationOnce((matches, serverTime, data) => {
       matches.push(makeNewGameMatch())
     })
 
     const actual = sut.parse(input)
 
-    expect(actual[0]).toBeInstanceOf(GameMatch)
+    expect(actual[0]).toBeInstanceOf(Match)
   })
 })

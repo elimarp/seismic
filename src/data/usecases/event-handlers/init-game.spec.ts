@@ -1,13 +1,18 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression */
 import { faker } from '@faker-js/faker'
-import { InitGameEventHandler } from './init-game'
-import { makeNewGameMatch } from '../../../../test/utils/factories'
-import { GameMatch } from '../../../domain/models'
+import { type MatchSettings } from '../../../domain/models'
 import { MalformedInputError } from '../../../domain/usecases'
+import { type CloseMatchProtocol, type CreateMatchProtocol } from '../../protocols'
+import { InitGameEventHandler } from './init-game'
 
+class MatchRepositoryStub implements CreateMatchProtocol, CloseMatchProtocol {
+  closeLastMatch (): void {}
+  createMatch (createdAt: string, settings: MatchSettings): void {}
+}
 const makeSut = () => {
+  const matchRepositoryStub = new MatchRepositoryStub()
   return {
-    sut: new InitGameEventHandler()
+    sut: new InitGameEventHandler(matchRepositoryStub, matchRepositoryStub),
+    matchRepositoryStub
   }
 }
 
@@ -25,6 +30,7 @@ const makeValidInput = () => {
       `g_gametype\\${gameType}\\sv_hostname\\Code Miner Server\\sv_minRate\\0\\sv_maxRate\\10000\\sv_minPing\\0` +
       '\\sv_maxPing\\0\\sv_floodProtect\\1\\version\\ioq3 1.36 linux-x86_64 Apr 12 2009\\protocol\\68\\' +
       `mapname\\${mapName}\\gamename\\baseq3\\g_needpass\\0`,
+    serverTime: '0:01',
     assertion: {
       captureLimit,
       fragLimit,
@@ -36,49 +42,37 @@ const makeValidInput = () => {
 }
 
 describe('InitGame Event Handler', () => {
-  test("start new match correctly if there's no matches yet", () => {
-    const { sut } = makeSut()
-    const { input } = makeValidInput()
-
-    const matches: GameMatch[] = []
-    sut.handle(matches, '0:00', input)
-
-    expect(matches[0]).toBeInstanceOf(GameMatch)
-  })
-
-  test("start new game closing last one if it's open", () => {
-    const { sut } = makeSut()
-    const { input } = makeValidInput()
-
-    const matches: GameMatch[] = [makeNewGameMatch()]
-    sut.handle(matches, '0:00', input)
-
-    expect(matches[0].isOpen).toBe(false)
-    expect(matches[1]).toBeInstanceOf(GameMatch)
-    expect(matches[1].isOpen).toBe(true)
-  })
-
   test('throw MalformedInputError if no game settings data', () => {
     const { sut } = makeSut()
     const input = ''
 
-    const matches: GameMatch[] = [makeNewGameMatch()]
-
-    const actual = () => sut.handle(matches, '0:00', input)
+    const actual = () => { sut.handle('any time', input) }
     const expected = new MalformedInputError()
 
     expect(actual).toThrow(expected)
   })
 
-  test('start new game with the right settings', () => {
-    const { sut } = makeSut()
+  test("start new match correctly if there's no matches yet", () => {
+    const { sut, matchRepositoryStub } = makeSut()
+    const { input, assertion, serverTime } = makeValidInput()
 
-    const matches: GameMatch[] = []
-    const { input, assertion } = makeValidInput()
-    const expected = new GameMatch(assertion)
+    const spied = jest.spyOn(matchRepositoryStub, 'createMatch')
+    sut.handle(serverTime, input)
 
-    sut.handle(matches, '0:00', input)
+    expect(spied).toHaveBeenCalledTimes(1)
+    expect(spied).toHaveBeenCalledWith(serverTime, assertion)
+  })
 
-    expect(matches[0]).toStrictEqual(expected)
+  test("start new game closing last one if it's open", () => {
+    const { sut, matchRepositoryStub } = makeSut()
+    const { input, assertion, serverTime } = makeValidInput()
+
+    const closeLastMatchSpy = jest.spyOn(matchRepositoryStub, 'closeLastMatch')
+    const createMatchSpy = jest.spyOn(matchRepositoryStub, 'createMatch')
+    sut.handle(serverTime, input)
+
+    expect(closeLastMatchSpy).toHaveBeenCalledTimes(1)
+    expect(createMatchSpy).toHaveBeenCalledTimes(1)
+    expect(createMatchSpy).toHaveBeenCalledWith(serverTime, assertion)
   })
 })

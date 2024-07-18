@@ -1,34 +1,53 @@
-import { makeNewGameMatch } from '../../../../test/utils/factories'
-import { Player } from '../../../domain/models'
+import { makeNewGameMatch, makeNewPlayer } from '../../../../test/utils/factories'
+import { type Match, type Player } from '../../../domain/models'
 import { MalformedInputError } from '../../../domain/usecases'
+import { type AddItemToPlayerProtocol, type GetOpenMatchProtocol, type GetPlayerProtocol } from '../../protocols'
 import { ItemEventHandler } from './item'
 
-const makeSut = () => ({ sut: new ItemEventHandler() })
 const makeInput = (id: string) => {
   return `${id} weapon_rocketlauncher`
 }
 
+class MatchRepositoryStub implements GetOpenMatchProtocol, GetPlayerProtocol, AddItemToPlayerProtocol {
+  addItem (playerId: number, itemName: string, collectedAt: string): void {}
+
+  getOpenMatch (): Match | null {
+    return makeNewGameMatch()
+  }
+
+  getPlayer (id: number): Player | null {
+    return makeNewPlayer()
+  }
+}
+const makeSut = () => {
+  const matchRepositoryStub = new MatchRepositoryStub()
+  return {
+    sut: new ItemEventHandler(matchRepositoryStub, matchRepositoryStub, matchRepositoryStub),
+    matchRepositoryStub
+  }
+}
+
 describe('Item Event Handler', () => {
-  test('do nothing if last match is not open', () => {
-    const { sut } = makeSut()
+  test('skip if last match is not open', () => {
+    const { sut, matchRepositoryStub } = makeSut()
     const input = 'any input'
 
-    const lastMatch = makeNewGameMatch()
-    lastMatch.isOpen = false
-    const matches = [lastMatch]
+    const getOpenMatchSpy = jest.spyOn(matchRepositoryStub, 'getOpenMatch')
+    getOpenMatchSpy.mockReturnValueOnce(null)
 
-    sut.handle(matches, '0:00', input)
+    const addItemSpy = jest.spyOn(matchRepositoryStub, 'addItem')
 
-    expect(matches[0].isOpen).toBe(false)
-    expect(matches[0].players).toStrictEqual([])
+    sut.handle('0:03', input)
+
+    expect(getOpenMatchSpy).toHaveBeenCalledTimes(1)
+    expect(addItemSpy).toHaveBeenCalledTimes(0)
   })
 
   test('throw MalformedInputError if input is empty', () => {
     const { sut } = makeSut()
     const input = ''
-    const matches = [makeNewGameMatch()]
 
-    const actual = () => { sut.handle(matches, '0:04', input) }
+    const actual = () => { sut.handle('0:03', input) }
     const expected = new MalformedInputError()
 
     expect(actual).toThrow(expected)
@@ -37,43 +56,35 @@ describe('Item Event Handler', () => {
   test('throw MalformedInputError if playerId is not a positive number', () => {
     const { sut } = makeSut()
     const input = makeInput('a')
-    const matches = [makeNewGameMatch()]
 
-    const actual = () => { sut.handle(matches, '0:04', input) }
+    const actual = () => { sut.handle('0:04', input) }
     const expected = new MalformedInputError()
 
     expect(actual).toThrow(expected)
   })
 
   test("throw MalformedInputError if player isn't found", () => {
-    const { sut } = makeSut()
+    const { sut, matchRepositoryStub } = makeSut()
     const input = makeInput('3')
 
-    const match = makeNewGameMatch()
-    match.players.push(new Player(2))
-    const matches = [match]
+    jest.spyOn(matchRepositoryStub, 'getPlayer').mockReturnValueOnce(null)
 
-    const actual = () => { sut.handle(matches, '0:04', input) }
+    const actual = () => { sut.handle('0:04', input) }
     const expected = new MalformedInputError()
 
     expect(actual).toThrow(expected)
   })
 
-  test('add item to player items successfully', () => {
-    const { sut } = makeSut()
+  test('ensure addItem is called correctly', () => {
+    const { sut, matchRepositoryStub } = makeSut()
     const input = makeInput('2')
 
-    const match = makeNewGameMatch()
-    match.players.push(new Player(2))
-    const matches = [match]
+    const serverTime = '0:05'
+    const spied = jest.spyOn(matchRepositoryStub, 'addItem')
 
-    const matchTime = '0:05'
-    sut.handle(matches, matchTime, input)
+    sut.handle(serverTime, input)
 
-    expect(match.players[0].items.length).toBe(1)
-    expect(match.players[0].items[0]).toEqual({
-      name: 'weapon_rocketlauncher',
-      collectedAt: matchTime
-    })
+    expect(spied).toHaveBeenCalledTimes(1)
+    expect(spied).toHaveBeenCalledWith(2, 'weapon_rocketlauncher', serverTime)
   })
 })
