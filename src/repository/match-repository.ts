@@ -3,10 +3,11 @@ import {
   type GetOpenMatchProtocol,
   type GetPlayerProtocol,
   type CloseMatchProtocol,
-  type CreateMatchProtocol
+  type CreateMatchProtocol,
+  type AddKillProtocol
 } from '../data/protocols'
 import { type UpdatePlayerProtocol } from '../data/protocols/match/update-player'
-import { Match, Player, type MatchSettings, type PlayerInfo } from '../domain/models'
+import { Match, type MeanOfDeath, Player, type PlayerInGameId, type MatchSettings, type PlayerInfo } from '../domain/models'
 
 export class MatchRepository implements
   CreateMatchProtocol,
@@ -14,10 +15,17 @@ export class MatchRepository implements
   GetOpenMatchProtocol,
   GetPlayerProtocol,
   AddPlayerProtocol,
-  UpdatePlayerProtocol {
+  UpdatePlayerProtocol,
+  AddKillProtocol {
   private readonly matches: Match[] = []
 
   constructor (public readonly settings: MatchSettings) {}
+
+  // TODO: implement
+  // TODO: test
+  addKill (killerId: PlayerInGameId, victimId: PlayerInGameId, mod: MeanOfDeath, serverTime?: string): void {
+
+  }
 
   updatePlayer (id: number, data: PlayerInfo & { joinedAt: string }): void {
     const match = this.matches.at(-1)

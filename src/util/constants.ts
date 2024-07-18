@@ -17,6 +17,8 @@ export const GAME_EVENTS = [
   'ShutdownGame'
 ] as const
 
+export const WORLD_ID = 1022
+
 export enum GAME_TYPES {
   FreeForAll,
   Tournament, // one on one tournament

@@ -1,5 +1,7 @@
 export * from './add-item-to-player'
+export * from './add-kill'
 export * from './add-player'
+export * from './add-suicide'
 export * from './close-match'
 export * from './create-match'
 export * from './get-open-match'
