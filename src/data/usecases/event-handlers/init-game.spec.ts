@@ -1,4 +1,4 @@
-import { faker } from '@faker-js/faker'
+import { makeCaptureLimit, makeFragLimit, makeGameType, makeMapName, makeTimeLimit } from '../../../../test/utils/factories'
 import { type MatchSettings } from '../../../domain/models'
 import { MalformedInputError } from '../../../domain/usecases'
 import { type CloseMatchProtocol, type CreateMatchProtocol } from '../../protocols'
@@ -17,19 +17,15 @@ const makeSut = () => {
 }
 
 const makeValidInput = () => {
-  // TODO: DRY
-  const captureLimit = faker.number.int({ min: 8, max: 12 })
-  const fragLimit = faker.number.int({ min: 10, max: 20 })
-  const gameType = faker.number.int({ min: 0, max: 4 })
-  const mapName = 'q3dm17'
-  const timeLimit = faker.number.int({ min: 5, max: 20 })
+  const captureLimit = makeCaptureLimit()
+  const fragLimit = makeFragLimit()
+  const gameType = makeGameType()
+  const mapName = makeMapName()
+  const timeLimit = makeTimeLimit()
 
   return {
-    input: `\\capturelimit\\${captureLimit}\\g_maxGameClients\\0\\timelimit\\${timeLimit}\\fraglimit\\${fragLimit}\\` +
-      'dmflags\\0\\bot_minplayers\\0\\sv_allowDownload\\0\\sv_maxclients\\16\\sv_privateClients\\2\\' +
-      `g_gametype\\${gameType}\\sv_hostname\\Code Miner Server\\sv_minRate\\0\\sv_maxRate\\10000\\sv_minPing\\0` +
-      '\\sv_maxPing\\0\\sv_floodProtect\\1\\version\\ioq3 1.36 linux-x86_64 Apr 12 2009\\protocol\\68\\' +
-      `mapname\\${mapName}\\gamename\\baseq3\\g_needpass\\0`,
+    input: `\\capturelimit\\${captureLimit}\\timelimit\\${timeLimit}\\fraglimit\\${fragLimit}\\` +
+      `g_gametype\\${gameType}\\mapname\\${mapName}\\gamename\\baseq3\\g_needpass\\0`,
     serverTime: '0:01',
     assertion: {
       captureLimit,

@@ -2,19 +2,19 @@ import { faker } from '@faker-js/faker'
 import { Match, type MatchSettings, Player } from '../../src/domain/models'
 import { TEAMS } from '../../src/util/constants'
 
-export const makeNewGameMatch = (replacing?: MatchSettings) => {
-  const capturelimit = faker.number.int({ min: 8, max: 12 })
-  const fraglimit = faker.number.int({ min: 10, max: 20 })
-  const gametype = faker.number.int({ min: 0, max: 4 })
-  const mapname = 'q3dm17'
-  const timelimit = faker.number.int({ min: 5, max: 20 })
+export const makeCaptureLimit = () => faker.number.int({ min: 8, max: 12 })
+export const makeFragLimit = () => faker.number.int({ min: 10, max: 20 })
+export const makeGameType = () => faker.number.int({ min: 0, max: 4 })
+export const makeMapName = () => faker.word.noun()
+export const makeTimeLimit = () => faker.number.int({ min: 0, max: 20 })
 
+export const makeNewGameMatch = (replacing?: MatchSettings) => {
   return new Match('0:00', {
-    captureLimit: replacing?.captureLimit ?? capturelimit,
-    fragLimit: replacing?.fragLimit ?? fraglimit,
-    gameType: replacing?.gameType ?? gametype,
-    mapName: replacing?.mapName ?? mapname,
-    timeLimit: replacing?.timeLimit ?? timelimit
+    captureLimit: replacing?.captureLimit ?? makeCaptureLimit(),
+    fragLimit: replacing?.fragLimit ?? makeFragLimit(),
+    gameType: replacing?.gameType ?? makeGameType(),
+    mapName: replacing?.mapName ?? makeMapName(),
+    timeLimit: replacing?.timeLimit ?? makeTimeLimit()
   })
 }
 
