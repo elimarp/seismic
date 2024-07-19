@@ -2,3 +2,4 @@ node_modules
 dist
 TODOS.txt
 test/coverage
+reports

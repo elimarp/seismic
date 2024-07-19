@@ -1,12 +1,10 @@
 {
   "compilerOptions": {
     "strict": true,
-    "rootDirs": [
-      "src",
-      "test"
-    ],
+    "rootDirs": ["src", "test"],
     "outDir": "./dist",
-    "allowUnreachableCode": true
+    "allowUnreachableCode": true,
+    "esModuleInterop": true
   },
   "include": [
     "src",
