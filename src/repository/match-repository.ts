@@ -4,7 +4,8 @@ import {
   type GetPlayerProtocol,
   type CloseMatchProtocol,
   type CreateMatchProtocol,
-  type AddKillProtocol
+  type AddKillProtocol,
+  type AddSuicideProtocol
 } from '../data/protocols'
 import { type UpdatePlayerProtocol } from '../data/protocols/match/update-player'
 import { Match, type MeanOfDeath, Player, type PlayerInGameId, type MatchSettings, type PlayerInfo } from '../domain/models'
@@ -16,18 +17,35 @@ export class MatchRepository implements
   GetPlayerProtocol,
   AddPlayerProtocol,
   UpdatePlayerProtocol,
-  AddKillProtocol {
-  private readonly matches: Match[] = []
+  AddKillProtocol,
+  AddSuicideProtocol {
+  matches: Match[] = []
 
-  constructor (public readonly settings: MatchSettings) {}
+  addSuicide (victimId: PlayerInGameId, killerId: PlayerInGameId, mod: MeanOfDeath, serverTime?: string): void {
+    const match = this.matches.at(-1)
+    if (!match) return
 
-  // TODO: implement
-  // TODO: test
-  addKill (killerId: PlayerInGameId, victimId: PlayerInGameId, mod: MeanOfDeath, serverTime?: string): void {
+    match.totalKills += 1
 
+    const victim = this.getPlayer(victimId)
+    if (!victim) return
+
+    victim.suicides.push([killerId, mod])
   }
 
-  updatePlayer (id: number, data: PlayerInfo & { joinedAt: string }): void {
+  addKill (killerId: PlayerInGameId, victimId: PlayerInGameId, mod: MeanOfDeath, serverTime?: string): void {
+    const match = this.matches.at(-1)
+    if (!match) return
+
+    match.totalKills += 1
+
+    const killer = this.getPlayer(killerId)
+    if (!killer) return
+
+    killer.kills.push([victimId, mod])
+  }
+
+  updatePlayer (id: number, data: Partial<PlayerInfo & { joinedAt: string }>): void {
     const match = this.matches.at(-1)
     const player = match?.players.find(({ inGameId }) => id === inGameId)
 
