@@ -2,20 +2,22 @@ import { type PlayerInfo, type RawPlayerInfo } from '../../../domain/models/play
 import { MalformedInputError, type GameEventHandler } from '../../../domain/usecases'
 import { splitStringAtIndex } from '../../../util/string/split-at-index'
 import { parseBackslashDelimitedStringToObject, parseNumberStringToNumber } from '../../../util/transformers'
-import { type GetOpenMatchProtocol, type AddPlayerProtocol } from '../../protocols'
+import { type AddPlayerProtocol, type GetOpenMatchProtocol, type UpdatePlayerProtocol } from '../../protocols'
 import { type GetPlayerProtocol } from '../../protocols/match/get-player'
 
 export class ClientUserInfoChangedEventHandler implements GameEventHandler {
   constructor (
     private readonly getOpenMatchRepository: GetOpenMatchProtocol,
     private readonly getPlayerRepository: GetPlayerProtocol,
-    private readonly addPlayerRepository: AddPlayerProtocol
+    private readonly addPlayerRepository: AddPlayerProtocol,
+    private readonly updatePlayerRepository: UpdatePlayerProtocol
   ) {}
 
   handle (_serverTime: string, data?: string): void {
     if (!data) throw new MalformedInputError()
 
     const currentMatch = this.getOpenMatchRepository.getOpenMatch()
+
     if (!currentMatch) return
 
     const splitIndex = data.indexOf(' ')
@@ -30,7 +32,10 @@ export class ClientUserInfoChangedEventHandler implements GameEventHandler {
     const playerInfo = this.parsePlayerInfo(rawPlayerInfo)
 
     const player = this.getPlayerRepository.getPlayer(playerId)
-    if (player) throw new MalformedInputError()
+    if (player) {
+      this.updatePlayerRepository.updatePlayer(playerId, playerInfo)
+      return
+    }
 
     this.addPlayerRepository.addPlayer(playerId, playerInfo)
   }
