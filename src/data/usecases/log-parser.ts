@@ -1,8 +1,7 @@
-import { type GameEvent, type Match } from '../domain/models'
-import { GAME_EVENTS } from '../util/constants'
-import { type GameEventHandler } from '../domain/usecases/game-event-handler'
+import { type GameEvent, type Match } from '../../domain/models'
+import { type GameEventHandler } from '../../domain/usecases'
+import { GAME_EVENTS } from '../../util/constants'
 
-// TODO: rethink this (use controllers |  move LogParser class | call it controller)
 interface ParseServerLog {
   parse: (serverLog: string) => Match[]
 }
