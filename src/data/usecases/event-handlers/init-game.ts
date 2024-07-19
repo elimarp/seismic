@@ -13,7 +13,7 @@ export class InitGameEventHandler implements GameEventHandler {
   handle (serverTime: string, data?: string): void {
     if (!data) throw new MalformedInputError()
 
-    this.closeMatchRepository.closeLastMatch()
+    this.closeMatchRepository.closeLastMatch(serverTime, data)
 
     const rawMatchSettings = parseBackslashDelimitedStringToObject(data)
     const matchSettings = this.parseServerData(rawMatchSettings)

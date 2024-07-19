@@ -15,7 +15,7 @@ export class Match {
   endedAt?: string
 
   constructor (
-    private readonly createdAt: string,
-    private readonly settings: MatchSettings
+    public readonly createdAt: string,
+    public readonly settings: MatchSettings
   ) {}
 }

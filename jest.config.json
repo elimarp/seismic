@@ -1,6 +1,7 @@
 {
   "modulePaths": [
-    "<rootDir>"
+    "<rootDir>/src"
   ],
-  "moduleDirectories": ["<rootDir>", "node_modules"]
+  "moduleDirectories": ["<rootDir>", "node_modules"],
+  "coverageDirectory": "test/coverage"
 }

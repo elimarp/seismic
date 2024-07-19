@@ -4,7 +4,9 @@
   "description": "",
   "main": "src/index.ts",
   "scripts": {
-    "test": "npx jest --verbose"
+    "test": "npx jest --verbose",
+    "test:coverage": "npx jest --collectCoverage",
+    "test:dev": "npx jest --watch"
   },
   "keywords": [],
   "author": "elimarp",
