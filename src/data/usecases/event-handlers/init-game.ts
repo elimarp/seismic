@@ -8,12 +8,12 @@ export class InitGameEventHandler implements GameEventHandler {
   constructor (
     private readonly createMatchRepository: CreateMatchProtocol,
     private readonly closeMatchRepository: CloseMatchProtocol
-  ) {}
+  ) { }
 
   handle (serverTime: string, data?: string): void {
     if (!data) throw new MalformedInputError()
 
-    this.closeMatchRepository.closeLastMatch(serverTime, data)
+    this.closeMatchRepository.closeLastMatch(serverTime, 'Another game has been started')
 
     const rawMatchSettings = parseBackslashDelimitedStringToObject(data)
     const matchSettings = this.parseServerData(rawMatchSettings)
@@ -22,14 +22,16 @@ export class InitGameEventHandler implements GameEventHandler {
   }
 
   private parseServerData (raw: RawMatchSettings): MatchSettings {
-    const settings: MatchSettings = {}
+    if (!raw.g_gametype) throw new MalformedInputError()
+    const settings: MatchSettings = {
+      gameType: parseNumberStringToNumber(raw.g_gametype)
+    }
     if (!raw || typeof raw !== 'object') {
       return settings
     }
 
     if (raw.capturelimit) settings.captureLimit = parseNumberStringToNumber(raw.capturelimit)
     if (raw.fraglimit) settings.fragLimit = parseNumberStringToNumber(raw.fraglimit)
-    if (raw.g_gametype) settings.gameType = parseNumberStringToNumber(raw.g_gametype)
     if (raw.mapname) settings.mapName = String(raw.mapname)
     if (raw.timelimit) settings.timeLimit = parseNumberStringToNumber(raw.timelimit)
 

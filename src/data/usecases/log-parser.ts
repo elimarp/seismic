@@ -1,33 +1,55 @@
-import { type GameEvent, type Match } from '../../domain/models'
+import { type Match, type GameEvent } from '../../domain/models'
 import { type GameEventHandler } from '../../domain/usecases'
+
+import * as fs from 'fs'
+import * as readline from 'readline'
 import { GAME_EVENTS } from '../../util/constants'
+import { type GetMatchesProtocol } from '../protocols/match/get-matches'
 
 interface ParseServerLog {
-  parse: (serverLog: string) => Match[]
+  parse: (logFilepath: string) => Promise<Match[]>
 }
 
 export class LogParser implements ParseServerLog {
-  constructor (private readonly eventHandlers: Record<GameEvent, GameEventHandler>) {}
+  constructor (
+    private readonly eventHandlers: Record<GameEvent, GameEventHandler>,
+    private readonly getMatchesRepository: GetMatchesProtocol
+  ) {}
 
-  // TODO?: catch errors? inside for loop?
-  parse (serverLog: string): Match[] {
-    if (typeof serverLog !== 'string' || !serverLog) return []
+  async parse (filePath: string): Promise<Match[]> {
+    return await new Promise((resolve, reject) => {
+      const readStream = fs.createReadStream(filePath, { encoding: 'utf8' })
 
-    const lines = serverLog.split('\n')
+      const readInterface = readline.createInterface({
+        input: readStream,
+        crlfDelay: Infinity
+      })
 
-    const splitter = ': '
-    for (const line of lines) {
-      const [serverTimeAndEvent, rest] = line.trim().split(splitter)
-      const [serverTime, eventNameColon] = serverTimeAndEvent.split(' ')
+      readStream.on('error', (error) => {
+        reject(error)
+      })
 
-      const eventName = eventNameColon.replace(':', '') as GameEvent // 'Shutdown:' would still have colon after 1st split
+      readStream.on('end', () => {
+        resolve(this.getMatchesRepository.getMatches())
+      })
 
-      if (!eventName || !GAME_EVENTS.includes(eventName)) continue
+      const eventLogSplitter = ': '
+      readInterface.on('line', (line) => {
+        try {
+          const [serverTimeAndEvent, rest] = line.trim().split(eventLogSplitter)
+          const [serverTime, eventNameColon] = serverTimeAndEvent.split(' ')
 
-      this.eventHandlers[eventName].handle(serverTime, rest)
-    }
+          if (!eventNameColon) return
 
-    // TODO: return Match reports
-    return []
+          const eventName = eventNameColon.replace(':', '') as GameEvent // 'Shutdown:' would still have colon after 1st split
+
+          if (!GAME_EVENTS.includes(eventName)) return
+
+          this.eventHandlers[eventName].handle(serverTime, rest)
+        } catch (error) {
+          console.error('failed to read line:', line)
+        }
+      })
+    })
   }
 }

@@ -95,8 +95,7 @@ describe('Kill Event Handler', () => {
 
     jest.spyOn(matchRepositoryStub, 'getPlayer').mockImplementation((id) => id === 2 ? makeNewPlayer() : null)
 
-    // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
-    const actual = () => sut.handle('0:04', input)
+    const actual = () => { sut.handle('0:04', input) }
     const expected = new MalformedInputError()
 
     expect(actual).toThrow(expected)

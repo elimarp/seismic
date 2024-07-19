@@ -1,15 +1,16 @@
-import { MalformedInputError } from '../../../domain/usecases'
 import { makeNewGameMatch, makeNewPlayer } from '../../../../test/utils/factories'
-import { ClientUserInfoChangedEventHandler } from './client-userinfo-changed'
-import { TEAMS } from '../../../util/constants'
-import { type AddPlayerProtocol, type GetOpenMatchProtocol, type GetPlayerProtocol } from '../../protocols'
 import { type Match, type Player, type PlayerInfo } from '../../../domain/models'
+import { MalformedInputError } from '../../../domain/usecases'
+import { TEAMS } from '../../../util/constants'
+import { type UpdatePlayerProtocol, type AddPlayerProtocol, type GetOpenMatchProtocol, type GetPlayerProtocol } from '../../protocols'
+import { ClientUserInfoChangedEventHandler } from './client-userinfo-changed'
 
 const makeInput = (id: string, nickname: string) => `${id} n\\${nickname}\\t\\0\\model\\uriel/zael\\hmodel\\uriel/zael\\g_redteam\\\\g_blueteam\\` +
-'\\c1\\5\\c2\\5\\hc\\100\\w\\0\\l\\0\\tt\\0\\tl\\0'
+  '\\c1\\5\\c2\\5\\hc\\100\\w\\0\\l\\0\\tt\\0\\tl\\0'
 
-class MatchRepositoryStub implements GetOpenMatchProtocol, GetPlayerProtocol, AddPlayerProtocol {
-  addPlayer (id: number, info: PlayerInfo): void {}
+class MatchRepositoryStub implements GetOpenMatchProtocol, GetPlayerProtocol, AddPlayerProtocol, UpdatePlayerProtocol {
+  updatePlayer (id: number, data: Partial<PlayerInfo & { joinedAt: string }>): void { }
+  addPlayer (id: number, info: PlayerInfo): void { }
 
   getOpenMatch (): Match | null {
     return makeNewGameMatch()
@@ -22,7 +23,7 @@ class MatchRepositoryStub implements GetOpenMatchProtocol, GetPlayerProtocol, Ad
 const makeSut = () => {
   const matchRepositoryStub = new MatchRepositoryStub()
   return {
-    sut: new ClientUserInfoChangedEventHandler(matchRepositoryStub, matchRepositoryStub, matchRepositoryStub),
+    sut: new ClientUserInfoChangedEventHandler(matchRepositoryStub, matchRepositoryStub, matchRepositoryStub, matchRepositoryStub),
     matchRepositoryStub
   }
 }

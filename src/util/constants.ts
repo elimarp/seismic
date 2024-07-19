@@ -28,3 +28,11 @@ export enum GAME_TYPES {
   TeamDeathMatch,
   CaptureTheFlag,
 }
+
+export const GAME_TYPE_NAMES = [
+  'Free For All',
+  'Tournament',
+  'Single Player',
+  'Team Deathmatch',
+  'Capture The Flag'
+] as const

@@ -2,7 +2,7 @@ export type MatchSettings = {
   captureLimit?: number
   timeLimit?: number
   fragLimit?: number
-  gameType?: number
+  gameType: number
   mapName?: string
 }
 

@@ -1,14 +1,16 @@
 import {
+  type AddItemToPlayerProtocol,
+  type AddKillProtocol,
   type AddPlayerProtocol,
-  type GetOpenMatchProtocol,
-  type GetPlayerProtocol,
+  type AddSuicideProtocol,
   type CloseMatchProtocol,
   type CreateMatchProtocol,
-  type AddKillProtocol,
-  type AddSuicideProtocol
+  type GetOpenMatchProtocol,
+  type GetPlayerProtocol
 } from '../data/protocols'
+import { type GetMatchesProtocol } from '../data/protocols/match/get-matches'
 import { type UpdatePlayerProtocol } from '../data/protocols/match/update-player'
-import { Match, type MeanOfDeath, Player, type PlayerInGameId, type MatchSettings, type PlayerInfo } from '../domain/models'
+import { Match, type MatchSettings, type MeanOfDeath, Player, type PlayerInfo, type PlayerInGameId } from '../domain/models'
 
 export class MatchRepository implements
   CreateMatchProtocol,
@@ -18,8 +20,26 @@ export class MatchRepository implements
   AddPlayerProtocol,
   UpdatePlayerProtocol,
   AddKillProtocol,
-  AddSuicideProtocol {
+  AddSuicideProtocol,
+  AddItemToPlayerProtocol,
+  GetMatchesProtocol {
+  private static instance: MatchRepository
   matches: Match[] = []
+
+  public static getInstance (): MatchRepository {
+    if (!MatchRepository.instance) {
+      MatchRepository.instance = new MatchRepository()
+    }
+    return MatchRepository.instance
+  }
+
+  getMatches (): Match[] {
+    return this.matches
+  }
+
+  addItem (playerId: number, itemName: string, collectedAt: string): void {
+    // TODO: implement
+  }
 
   addSuicide (victimId: PlayerInGameId, killerId: PlayerInGameId, mod: MeanOfDeath, serverTime?: string): void {
     const match = this.matches.at(-1)
@@ -93,6 +113,8 @@ export class MatchRepository implements
   closeLastMatch (serverTime: string, reason?: string): void {
     const lastMatch = this.matches.at(-1)
     if (!lastMatch) return
+
+    if (!lastMatch.isOpen) return
 
     lastMatch.endedAt = serverTime
     lastMatch.endReason = reason

@@ -16,4 +16,8 @@ export class Player {
     this.nickname = nickname
     this.team = team
   }
+
+  getScore () {
+    return this.kills.length - this.suicides.length
+  }
 }
