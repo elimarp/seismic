@@ -1,7 +1,7 @@
 import { existsSync } from 'fs'
 import { mkdir, readdir, writeFile } from 'fs/promises'
 import path from 'path'
-import { GAMELOGS_DIRECTORY, REPORTS_DIRECTORY } from '../../util/constants'
+import { FILE_NOT_FOUND_ERROR_MESSAGE, GAMELOGS_DIRECTORY, REPORTS_DIRECTORY } from '../../util/constants'
 import {
   promptExportOption,
   promptExternalFile,
@@ -11,8 +11,6 @@ import {
 } from '../../util/prompts'
 import { type GetReportOption } from '../../presentation/match-reporter'
 import { makeLogParser, makeMatchReporter } from '../factories'
-
-const fileNotFoundErrorMessage = 'File not found.'
 
 const logParser = makeLogParser()
 const reporter = makeMatchReporter()
@@ -32,7 +30,7 @@ export const adaptInteractiveCli = async () => {
   if (!filepath) return
 
   if (!existsSync(filepath)) {
-    console.error(fileNotFoundErrorMessage)
+    console.error(FILE_NOT_FOUND_ERROR_MESSAGE)
     return
   }
 

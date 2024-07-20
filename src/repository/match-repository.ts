@@ -38,7 +38,16 @@ export class MatchRepository implements
   }
 
   addItem (playerId: number, itemName: string, collectedAt: string): void {
-    // TODO: implement
+    const match = this.matches.at(-1)
+    if (!match) return
+
+    const player = this.getPlayer(playerId)
+    if (!player) return
+
+    player.items.push({
+      name: itemName,
+      collectedAt
+    })
   }
 
   addSuicide (victimId: PlayerInGameId, killerId: PlayerInGameId, mod: MeanOfDeath, serverTime?: string): void {

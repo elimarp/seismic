@@ -5,6 +5,7 @@ export const promptOutputProperties = async (): Promise<string[]> => await multi
   options: [
     { name: 'Match info', value: 'match-info', disabled: true },
     { name: 'Scoreboard', value: 'scoreboard', disabled: true },
-    { name: 'Means of death', value: 'mod' }
+    { name: 'Means of death', value: 'mod' },
+    { name: 'Player titles', value: 'player-title' }
   ]
 })

@@ -11,6 +11,7 @@ type ScoreboardRow = {
   kills: number
   suicides: number
   team: number
+  title?: string
 }
 
 type ModName = typeof MEANS_OF_DEATH_NAMES[number]
@@ -21,6 +22,7 @@ type MatchReport = {
   totalKills: number
   players: string[]
   createdAt: string
+  collectedItems: number
   scoreboard?: ScoreboardRow[]
   killsByMeans?: Mods
   teamScores?: TeamScore
@@ -32,97 +34,40 @@ export class MatchReporter {
   getReport (matches: Match[], ...options: GetReportOption[]): MatchReport[] {
     const reports = matches.map((match) => {
       const { gameType } = match.settings
+
+      const scoreboard = options.includes('scoreboard')
+        ? this.createScoreboard(match, options.includes('player-title'))
+        : undefined
+
+      const killsByMeans = options.includes('mod') ? this.createModBoard(match) : undefined
+
+      const teamScores = gameType === GAME_TYPES.CaptureTheFlag || gameType === GAME_TYPES.TeamDeathMatch
+        ? match.getTeamScores()
+        : undefined
+
+      const players = match.players.map(player => player.nickname)
+
+      const collectedItems = match.players
+        .map(player => player.items.length)
+        .reduce((total, current) => total + current, 0)
+
       const matchReport: MatchReport = {
         gameMode: GAME_TYPE_NAMES[gameType],
         totalKills: match.totalKills,
-        players: match.players.map(player => player.nickname),
+        players,
         createdAt: match.createdAt,
         endedAt: match.endedAt,
-        endReason: match.endReason
-      }
-
-      if (options.includes('scoreboard')) {
-        matchReport.scoreboard = match.players.map<ScoreboardRow>((player) => ({
-          nickname: player.nickname,
-          score: player.getScore(),
-          kills: player.kills.length,
-          suicides: player.suicides.length,
-          team: player.team
-        })).sort((a, b) => b.score - a.score)
-      }
-
-      if (options.includes('mod')) {
-        const playersKillMods = match.players.map(player => {
-          const playerKillMods = player.kills.map(([, mod]) => mod)
-          return playerKillMods
-        })
-
-        const killMods = playersKillMods.flat()
-
-        const modTable = killMods.reduce<Partial<Record<ModName, number>>>((accumulator, modNumber) => {
-          const modName = MEANS_OF_DEATH_NAMES[modNumber]
-          if (accumulator[modName]) {
-            accumulator[modName]++
-          } else {
-            accumulator[modName] = 1
-          }
-          return accumulator
-        }, {})
-
-        const modTableSorted = Object.fromEntries(Object.entries(modTable).sort((a, b) => b[1] - a[1]))
-        matchReport.killsByMeans = modTableSorted
-      }
-
-      if (gameType === GAME_TYPES.CaptureTheFlag || gameType === GAME_TYPES.TeamDeathMatch) {
-        matchReport.teamScores = match.getTeamScores()
+        endReason: match.endReason,
+        scoreboard,
+        killsByMeans,
+        teamScores,
+        collectedItems
       }
 
       return matchReport
     })
 
     return reports
-  }
-
-  private getScoreboardTable (scoreboard: ScoreboardRow[]): string {
-    const scoreboardTable = new Table({
-      head: [
-        chalk.grey('#'), chalk.grey('Nickname'), chalk.grey('Score'), chalk.grey('Total Kills'), chalk.grey('Suicides')
-      ]
-    })
-
-    const teamColors = [
-      chalk.white,
-      chalk.red,
-      chalk.blue,
-      chalk.gray
-    ]
-    const scoreboardPlayers = scoreboard.map((player, i) => ([
-      teamColors[player.team](i + 1),
-      teamColors[player.team](player.nickname),
-      teamColors[player.team](player.score),
-      teamColors[player.team](player.kills),
-      teamColors[player.team](player.suicides)
-    ]))
-
-    scoreboardTable.push(...scoreboardPlayers)
-
-    return scoreboardTable.toString()
-  }
-
-  private getModsTable (mods: Mods): string {
-    const modTable = new Table({
-      head: [chalk.grey('#'), chalk.grey('MOD Name'), chalk.grey('Total Kills')]
-    })
-
-    const rows = Object.entries(mods).map(([modName, kills], i) => ([
-      (i + 1).toString(),
-      modName,
-      kills.toString()
-    ]))
-
-    modTable.push(...rows)
-
-    return modTable.toString()
   }
 
   getPrettyReports (reports: MatchReport[]): string {
@@ -137,14 +82,14 @@ export class MatchReporter {
       const includeScoreboard = report.scoreboard
         ? [
             ['SCOREBOARD'],
-            [this.getScoreboardTable(report.scoreboard)]
+            [this.getPrintableScoreboard(report.scoreboard)]
           ]
         : []
 
       const includeModTable = report.killsByMeans
         ? [
             ['Means of Death'],
-            [this.getModsTable(report.killsByMeans)]
+            [this.getPrintableModBoard(report.killsByMeans)]
           ]
         : []
 
@@ -169,5 +114,91 @@ export class MatchReporter {
     }
 
     return result
+  }
+
+  private createModBoard (match: Match): Mods {
+    const playersKillMods = match.players.map(player => {
+      const playerKillMods = player.kills.map(([, mod]) => mod)
+      return playerKillMods
+    })
+
+    const killMods = playersKillMods.flat()
+
+    const modTable = killMods.reduce<Partial<Record<ModName, number>>>((accumulator, modNumber) => {
+      const modName = MEANS_OF_DEATH_NAMES[modNumber]
+      if (accumulator[modName]) {
+        accumulator[modName]++
+      } else {
+        accumulator[modName] = 1
+      }
+      return accumulator
+    }, {})
+
+    const modTableSorted = Object.fromEntries(Object.entries(modTable).sort((a, b) => b[1] - a[1]))
+    return modTableSorted
+  }
+
+  private createScoreboard (match: Match, enableTitles?: boolean): ScoreboardRow[] {
+    // TODO: create more titles
+    const lootingLarryIndex = enableTitles
+      ? match.players.reduce(
+        (returnIndex, player, currentIndex, players) => player.items.length > players[returnIndex].items.length ? currentIndex : returnIndex,
+        0
+      )
+      : undefined
+
+    const scoreboard = match.players.map<ScoreboardRow>((player, index) => ({
+      nickname: player.nickname,
+      score: player.getScore(),
+      kills: player.kills.length,
+      suicides: player.suicides.length,
+      team: player.team,
+      title: index === lootingLarryIndex ? `Looting Larry: ${player.items.length} items collected` : undefined
+    })).sort((a, b) => b.score - a.score)
+
+    return scoreboard
+  }
+
+  private getPrintableScoreboard (scoreboard: ScoreboardRow[]): string {
+    const scoreboardTable = new Table({
+      head: [
+        chalk.grey('#'), chalk.grey('Nickname'), chalk.grey('Score'), chalk.grey('Total Kills'), chalk.grey('Suicides'), chalk.grey('Title')
+      ]
+    })
+
+    const teamColors = [
+      chalk.white,
+      chalk.red,
+      chalk.blue,
+      chalk.gray
+    ]
+    const scoreboardPlayers = scoreboard.map((player, i) => ([
+      teamColors[player.team](i + 1),
+      teamColors[player.team](player.nickname),
+      teamColors[player.team](player.score),
+      teamColors[player.team](player.kills),
+      teamColors[player.team](player.suicides),
+      teamColors[player.team](player.title ?? '')
+    ]))
+
+    scoreboardTable.push(...scoreboardPlayers)
+
+    return scoreboardTable.toString()
+  }
+
+  private getPrintableModBoard (mods: Mods): string {
+    const modTable = new Table({
+      head: [chalk.grey('#'), chalk.grey('MOD Name'), chalk.grey('Total Kills')]
+    })
+
+    const rows = Object.entries(mods).map(([modName, kills], i) => ([
+      (i + 1).toString(),
+      modName,
+      kills.toString()
+    ]))
+
+    modTable.push(...rows)
+
+    return modTable.toString()
   }
 }
