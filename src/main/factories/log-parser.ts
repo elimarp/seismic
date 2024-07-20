@@ -1,13 +1,13 @@
-import { ClientBeginEventHandler } from '../data/usecases/event-handlers/client-begin'
-import { ClientUserInfoChangedEventHandler } from '../data/usecases/event-handlers/client-userinfo-changed'
-import { ExitOrShutdownEventHandler } from '../data/usecases/event-handlers/exit-shutdown'
-import { InitGameEventHandler } from '../data/usecases/event-handlers/init-game'
-import { ItemEventHandler } from '../data/usecases/event-handlers/item'
-import { KillEventHandler } from '../data/usecases/event-handlers/kill'
-import { LogParser } from '../data/usecases/log-parser'
-import { type GameEvent } from '../domain/models'
-import { type GameEventHandler } from '../domain/usecases'
-import { MatchRepository } from '../repository/match-repository'
+import { ClientBeginEventHandler } from '../../data/usecases/event-handlers/client-begin'
+import { ClientUserInfoChangedEventHandler } from '../../data/usecases/event-handlers/client-userinfo-changed'
+import { ExitOrShutdownEventHandler } from '../../data/usecases/event-handlers/exit-shutdown'
+import { InitGameEventHandler } from '../../data/usecases/event-handlers/init-game'
+import { ItemEventHandler } from '../../data/usecases/event-handlers/item'
+import { KillEventHandler } from '../../data/usecases/event-handlers/kill'
+import { LogParser } from '../../data/usecases/log-parser'
+import { type GameEvent } from '../../domain/models'
+import { type GameEventHandler } from '../../domain/usecases'
+import { MatchRepository } from '../../repository/match-repository'
 
 const matchRepository = MatchRepository.getInstance()
 

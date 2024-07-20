@@ -7,10 +7,8 @@ export enum TEAMS {
 
 export const GAME_EVENTS = [
   'InitGame',
-  // 'ClientConnect',
   'ClientUserinfoChanged',
   'ClientBegin',
-  // 'ClientDisconnect',
   'Exit',
   'Item',
   'Kill',

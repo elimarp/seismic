@@ -3,6 +3,7 @@
     "capturelimit",
     "deathmatch",
     "fraglimit",
+    "GAMELOGS",
     "gametype",
     "INGAME",
     "mapname",

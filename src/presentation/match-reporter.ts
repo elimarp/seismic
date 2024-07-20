@@ -3,7 +3,7 @@ import Table from 'cli-table'
 import { MEANS_OF_DEATH_NAMES, type Match, type TeamScore } from '../domain/models'
 import { GAME_TYPE_NAMES, GAME_TYPES } from '../util/constants'
 
-export type GetReportOption = 'scoreboard' | '1v1' | 'player-title' | 'mod'
+export type GetReportOption = 'scoreboard' | 'player-title' | 'mod'
 
 type ScoreboardRow = {
   nickname: string
@@ -20,9 +20,12 @@ type MatchReport = {
   gameMode: string
   totalKills: number
   players: string[]
+  createdAt: string
   scoreboard?: ScoreboardRow[]
   killsByMeans?: Mods
   teamScores?: TeamScore
+  endedAt?: string
+  endReason?: string
 }
 
 export class MatchReporter {
@@ -32,7 +35,10 @@ export class MatchReporter {
       const matchReport: MatchReport = {
         gameMode: GAME_TYPE_NAMES[gameType],
         totalKills: match.totalKills,
-        players: match.players.map(player => player.nickname)
+        players: match.players.map(player => player.nickname),
+        createdAt: match.createdAt,
+        endedAt: match.endedAt,
+        endReason: match.endReason
       }
 
       if (options.includes('scoreboard')) {
@@ -77,7 +83,7 @@ export class MatchReporter {
     return reports
   }
 
-  getScoreboardTable (scoreboard: ScoreboardRow[]): string {
+  private getScoreboardTable (scoreboard: ScoreboardRow[]): string {
     const scoreboardTable = new Table({
       head: [
         chalk.grey('#'), chalk.grey('Nickname'), chalk.grey('Score'), chalk.grey('Total Kills'), chalk.grey('Suicides')
@@ -103,7 +109,7 @@ export class MatchReporter {
     return scoreboardTable.toString()
   }
 
-  getModsTable (mods: Mods): string {
+  private getModsTable (mods: Mods): string {
     const modTable = new Table({
       head: [chalk.grey('#'), chalk.grey('MOD Name'), chalk.grey('Total Kills')]
     })
@@ -149,6 +155,7 @@ export class MatchReporter {
         : []
 
       matchTable.push(
+        [`${report.createdAt} - ${report.endedAt ?? '?'} (${report.endReason ?? 'Unknown reason'})`],
         [`Total Kills: ${report.totalKills}`],
         [`Players: ${report.players.join(', ')}`],
         ...includeScoreboard,

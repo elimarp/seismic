@@ -7,6 +7,6 @@ export class ExitOrShutdownEventHandler implements GameEventHandler {
   ) {}
 
   handle (serverTime: string, data?: string): void {
-    this.closeMatchRepository.closeLastMatch(serverTime, data)
+    this.closeMatchRepository.closeLastMatch(serverTime, data ?? 'Suddenly shutdown')
   }
 }

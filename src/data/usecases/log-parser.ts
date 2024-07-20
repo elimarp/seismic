@@ -11,6 +11,8 @@ interface ParseServerLog {
 }
 
 export class LogParser implements ParseServerLog {
+  private readonly eventLogSplitter = ': '
+
   constructor (
     private readonly eventHandlers: Record<GameEvent, GameEventHandler>,
     private readonly getMatchesRepository: GetMatchesProtocol
@@ -25,31 +27,26 @@ export class LogParser implements ParseServerLog {
         crlfDelay: Infinity
       })
 
-      readStream.on('error', (error) => {
-        reject(error)
-      })
-
-      readStream.on('end', () => {
-        resolve(this.getMatchesRepository.getMatches())
-      })
-
-      const eventLogSplitter = ': '
-      readInterface.on('line', (line) => {
-        try {
-          const [serverTimeAndEvent, rest] = line.trim().split(eventLogSplitter)
-          const [serverTime, eventNameColon] = serverTimeAndEvent.split(' ')
-
-          if (!eventNameColon) return
-
-          const eventName = eventNameColon.replace(':', '') as GameEvent // 'Shutdown:' would still have colon after 1st split
-
-          if (!GAME_EVENTS.includes(eventName)) return
-
-          this.eventHandlers[eventName].handle(serverTime, rest)
-        } catch (error) {
-          console.error('failed to read line:', line)
-        }
-      })
+      readStream.on('error', (error) => { reject(error) })
+      readStream.on('end', () => { resolve(this.getMatchesRepository.getMatches()) })
+      readInterface.on('line', (line: string) => { this.readLine(line) })
     })
+  }
+
+  private readLine (line: string) {
+    try {
+      const [serverTimeAndEvent, rest] = line.trim().split(this.eventLogSplitter)
+      const [serverTime, eventNameColon] = serverTimeAndEvent.split(' ')
+
+      if (!eventNameColon) return
+
+      const eventName = eventNameColon.replace(':', '') as GameEvent // 'Shutdown:' would still have colon after 1st split
+
+      if (!GAME_EVENTS.includes(eventName)) return
+
+      this.eventHandlers[eventName].handle(serverTime, rest)
+    } catch (error) {
+      console.error('failed to read line:', line)
+    }
   }
 }
